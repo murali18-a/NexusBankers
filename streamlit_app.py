@@ -465,6 +465,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+def render_html(html_str):
+    # Remove leading spaces on every line to prevent markdown indent code-block parsing
+    cleaned = "\n".join(line.strip() for line in html_str.split("\n"))
+    st.markdown(cleaned, unsafe_allow_html=True)
+
 # Helper function to assign band colors
 def get_band_color(b):
     colors = {
@@ -623,13 +628,13 @@ def render_recs(recs):
 
 # ── Navigation in Sidebar ──
 with st.sidebar:
-    st.markdown("""
+    render_html("""
     <div class="brand">
         <div class="brand-icon">💳</div>
         Fin<span>Pulse</span>
     </div>
     <div class="brand-sub">IDBI Innovate 2026</div>
-    """, unsafe_allow_html=True)
+    """)
     
     # Render Navigation (uses custom styled radio labels)
     view = st.radio(
@@ -639,13 +644,12 @@ with st.sidebar:
     )
 
     st.markdown("<br><hr>", unsafe_allow_html=True)
-    st.markdown(
+    render_html(
         "<div style='font-size: 11px; color: rgba(160,200,190,.4); line-height: 1.7;'>"
         "Explainable Financial Health Score.<br>"
         "Team NexusBankers.<br>"
         "Runs on the bank's own data — no black box."
-        "</div>",
-        unsafe_allow_html=True
+        "</div>"
     )
 
 # ════════════════ PORTFOLIO VIEW ════════════════
@@ -658,27 +662,27 @@ if view == "📊 Portfolio Health":
     # Premium Stat cards
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.markdown(f"""
+        render_html(f"""
         <div class="card">
             <div class="stat-label">Customers Scored</div>
             <div class="big-stat">{stats["total_customers"]:,}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with col2:
-        st.markdown(f"""
+        render_html(f"""
         <div class="card">
             <div class="stat-label">Average Score</div>
             <div class="big-stat">{stats["avg_score"]}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     with col3:
         at_risk = stats["bands"].get("At risk", 0)
-        st.markdown(f"""
+        render_html(f"""
         <div class="card">
             <div class="stat-label">At-Risk Customers</div>
             <div class="big-stat danger">{at_risk}</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
     # Score Distribution Chart
     st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -731,7 +735,7 @@ if view == "📊 Portfolio Health":
                 </tr>
             """
         table_html += "</tbody></table>"
-        st.markdown(table_html, unsafe_allow_html=True)
+        render_html(table_html)
     else:
         st.info("No customers found in this category.")
     st.markdown('</div>', unsafe_allow_html=True)
@@ -753,7 +757,7 @@ elif view == "🎯 Customer Score Card":
         gauge_html = render_svg_gauge(result.score, result.band)
         band_col = get_band_color(result.band)
         
-        st.markdown(f"""
+        render_html(f"""
         <div class="score-hero">
             {gauge_html}
             <div style="position: relative; z-index: 2;">
@@ -781,20 +785,24 @@ elif view == "🎯 Customer Score Card":
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
 
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown('<div class="card" style="min-height: 420px;">', unsafe_allow_html=True)
-            st.markdown('<div class="section-h">📋 Why this score</div>', unsafe_allow_html=True)
-            st.markdown(render_factor_list(result.factors), unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+            render_html(f"""
+            <div class="card" style="min-height: 420px;">
+                <div class="section-h">📋 Why this score</div>
+                {render_factor_list(result.factors)}
+            </div>
+            """)
 
         with col2:
-            st.markdown('<div class="card" style="min-height: 420px;">', unsafe_allow_html=True)
-            st.markdown('<div class="section-h">🚀 Recommended actions</div>', unsafe_allow_html=True)
-            st.markdown(render_recs(recs), unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+            render_html(f"""
+            <div class="card" style="min-height: 420px;">
+                <div class="section-h">🚀 Recommended actions</div>
+                {render_recs(recs)}
+            </div>
+            """)
     else:
         st.error("Customer not found. Please enter a valid ID (1 to 5000).")
 
@@ -861,7 +869,7 @@ else:
         else:
             delta_badge_html = f"<span class='delta-badge negative'>▼ {delta} points</span>"
 
-        st.markdown(f"""
+        render_html(f"""
         <div class="score-hero">
             {gauge_html}
             <div style="position: relative; z-index: 2;">
@@ -873,10 +881,12 @@ else:
                 </div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
         
         # Live Factor breakdown
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown('<div class="section-h">📋 Live factor breakdown</div>', unsafe_allow_html=True)
-        st.markdown(render_factor_list(new_res.factors), unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        render_html(f"""
+        <div class="card">
+            <div class="section-h">📋 Live factor breakdown</div>
+            {render_factor_list(new_res.factors)}
+        </div>
+        """)
