@@ -110,6 +110,10 @@ st.markdown("""
         flex-direction: column;
         gap: 6px;
     }
+    /* Hide the radio widget header label ("Navigation") */
+    div[data-testid="stRadio"] > label {
+        display: none !important;
+    }
     div[data-testid="stRadio"] label {
         padding: 12px 14px !important;
         border-radius: 10px !important;
@@ -129,18 +133,19 @@ st.markdown("""
         color: #E0F5F0 !important;
         transform: translateX(2px);
     }
-    div[data-testid="stRadio"] [data-checked="true"] {
+    /* Hide radio circle & indicator wrapper completely */
+    div[data-testid="stRadio"] label > div:first-child {
+        display: none !important;
+    }
+    /* Style check state */
+    div[data-testid="stRadio"] div[data-checked="true"] label {
         background: linear-gradient(135deg, #028090 0%, rgba(2,195,154,0.7) 100%) !important;
         color: #ffffff !important;
         font-weight: 600 !important;
         box-shadow: 0 4px 18px rgba(2,128,144,.3);
     }
-    /* Hide radio circle & indicator spacer */
-    div[data-testid="stRadio"] input[type="radio"] {
-        display: none !important;
-    }
-    div[data-testid="stRadio"] div[data-baseweb="radio"] > div:first-child {
-        display: none !important;
+    div[data-testid="stRadio"] div[data-checked="true"] label p {
+        color: #ffffff !important;
     }
     div[data-testid="stRadio"] label p {
         margin: 0 !important;
