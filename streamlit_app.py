@@ -1,4 +1,3 @@
-# pyrefly: ignore [missing-import]
 import streamlit as st
 import sqlite3
 import pandas as pd
@@ -28,176 +27,466 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling (Theme match)
+# Custom Styling (Glow-up to match the React premium UI)
 st.markdown("""
 <style>
-    /* Main Layout */
+    /* Import Google Font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    /* Global Overrides */
+    html, body, [class*="css"], [class*="st-"] {
+        font-family: 'Inter', sans-serif !important;
+    }
+    
     .stApp {
         background-color: #F2F7F9;
     }
-    
-    /* Branding */
-    .brand-title {
-        font-size: 34px;
-        font-weight: 900;
-        color: #0B1D2E;
-        letter-spacing: -0.6px;
-        margin-bottom: 2px;
-    }
-    .brand-title span {
-        color: #02C39A;
-    }
-    .brand-sub {
-        font-size: 11px;
-        color: #00A896;
-        letter-spacing: 2px;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin-bottom: 25px;
+
+    /* Subtle Dot Pattern on main content */
+    .stApp::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+        background-image: radial-gradient(circle, rgba(2, 128, 144, 0.04) 1px, transparent 1px);
+        background-size: 28px 28px;
     }
 
-    /* Cards */
-    .metric-card {
+    /* Hide Streamlit default branding/headers */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 1200px !important;
+    }
+
+    /* ── Sidebar ── */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0B1D2E 0%, #0F2942 60%, #132F4C 100%) !important;
+        border-right: 1px solid rgba(2,195,154,.08);
+    }
+    [data-testid="stSidebar"] * {
+        color: #B0CFC9;
+    }
+
+    /* Brand Section in Sidebar */
+    .brand {
+        font-size: 28px;
+        font-weight: 900;
+        color: #fff;
+        letter-spacing: -.6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .brand span { color: #02C39A; }
+    .brand-icon {
+        width: 36px; height: 36px;
+        background: linear-gradient(135deg, #02C39A 0%, #028090 100%);
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 4px 16px rgba(2,195,154,.3);
+        color: white !important;
+    }
+    .brand-sub {
+        font-size: 10px;
+        color: #00A896;
+        letter-spacing: 2.5px;
+        margin: 6px 0 32px 0;
+        text-transform: uppercase;
+        font-weight: 600;
+        padding-left: 46px;
+    }
+
+    /* Turn Streamlit's radio buttons into our active navigation pills */
+    div[data-testid="stRadio"] > div {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    div[data-testid="stRadio"] label {
+        padding: 12px 14px !important;
+        border-radius: 10px !important;
+        cursor: pointer !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: #8AAFA9 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        transition: all 0.2s !important;
+        background: transparent !important;
+        border: none !important;
+    }
+    div[data-testid="stRadio"] label:hover {
+        background: rgba(255,255,255,0.06) !important;
+        color: #E0F5F0 !important;
+        transform: translateX(2px);
+    }
+    div[data-testid="stRadio"] [data-checked="true"] {
+        background: linear-gradient(135deg, #028090 0%, rgba(2,195,154,0.7) 100%) !important;
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 18px rgba(2,128,144,.3);
+    }
+    /* Hide radio circle & indicator spacer */
+    div[data-testid="stRadio"] input[type="radio"] {
+        display: none !important;
+    }
+    div[data-testid="stRadio"] div[data-baseweb="radio"] > div:first-child {
+        display: none !important;
+    }
+    div[data-testid="stRadio"] label p {
+        margin: 0 !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+    }
+
+    /* ── Main View Typography ── */
+    .page-kicker {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        color: #028090;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+    .page-title {
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: -.6px;
+        margin: 6px 0 28px 0;
+        background: linear-gradient(135deg, #0B1D2E 0%, #028090 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ── Cards — Premium Glassmorphism ── */
+    .card {
         background: rgba(255, 255, 255, 0.72);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(11, 29, 46, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.6);
         border-radius: 16px;
-        padding: 20px;
-        box-shadow: 0 4px 20px rgba(11, 29, 46, 0.04);
-        margin-bottom: 15px;
+        box-shadow: 0 2px 12px rgba(11,29,46,.06), 0 1px 3px rgba(11,29,46,.04);
+        padding: 24px;
+        margin-bottom: 20px;
+        transition: box-shadow .25s ease, transform .25s ease;
     }
-    .metric-label {
+    .card:hover {
+        box-shadow: 0 4px 20px rgba(11,29,46,.08), 0 1px 4px rgba(11,29,46,.04);
+    }
+    .section-h {
+        font-size: 16px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        color: #0B1D2E;
+        letter-spacing: -.2px;
+    }
+
+    /* ── Stats Row ── */
+    .big-stat {
+        font-size: 42px;
+        font-weight: 900;
+        letter-spacing: -1px;
+        background: linear-gradient(135deg, #028090 0%, #02C39A 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-top: 4px;
+    }
+    .big-stat.danger {
+        background: linear-gradient(135deg, #E07A5F 0%, #E08A3C 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .stat-label {
         font-size: 11px;
         color: #5A6B72;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         font-weight: 600;
-        margin-bottom: 6px;
-    }
-    .metric-value {
-        font-size: 38px;
-        font-weight: 900;
-        color: #028090;
-        line-height: 1;
-    }
-    .metric-value.danger {
-        color: #E07A5F;
     }
 
-    /* Hero Banner */
-    .hero-card {
-        background: linear-gradient(135deg, #0B1D2E 0%, #0F2942 50%, #028090 100%);
-        border-radius: 20px;
-        padding: 30px;
-        color: #ffffff;
-        margin-bottom: 25px;
-        box-shadow: 0 12px 48px rgba(11, 29, 46, 0.12);
+    /* ── Hero Banner ── */
+    .score-hero {
+        background: linear-gradient(135deg, #0B1D2E 0%, #0F2942 40%, #028090 100%);
+        color: #fff;
+        border-radius: 22px;
+        padding: 34px 38px;
         display: flex;
         align-items: center;
-        gap: 30px;
+        gap: 36px;
+        box-shadow: 0 12px 48px rgba(11,29,46,.12), 0 0 40px rgba(2,195,154,.15);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 24px;
     }
-    .hero-gauge {
-        flex-shrink: 0;
-        width: 120px;
-        height: 120px;
+    .score-hero::before {
+        content: "";
+        position: absolute;
+        width: 200px; height: 200px;
         border-radius: 50%;
-        border: 10px solid rgba(255, 255, 255, 0.15);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        font-weight: 900;
+        background: rgba(2,195,154,.12);
+        top: -60px; right: -40px;
+        filter: blur(40px);
+    }
+    .gauge-wrapper {
+        flex-shrink: 0;
         position: relative;
     }
-    .hero-gauge.Excellent { border-color: #02C39A; color: #02C39A; }
-    .hero-gauge.Good { border-color: #00A896; color: #00A896; }
-    .hero-gauge.Fair { border-color: #E9B44C; color: #E9B44C; }
-    .hero-gauge.Needs-work { border-color: #E08A3C; color: #E08A3C; }
-    .hero-gauge.At-risk { border-color: #E07A5F; color: #E07A5F; }
-
-    /* Custom Factor List Row */
-    .factor-container {
-        padding: 12px 0;
-        border-bottom: 1px solid rgba(11, 29, 46, 0.08);
+    .gauge-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
-    .factor-container:last-child {
+    .gauge-num {
+        font-size: 46px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -2px;
+        color: #fff;
+    }
+    .gauge-of {
+        font-size: 11px;
+        color: rgba(255,255,255,.45);
+        font-weight: 500;
+        margin-top: 2px;
+    }
+
+    .band-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 13px;
+        margin-top: 10px;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,.15);
+        color: white;
+    }
+    
+    .metric-pills {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+    }
+    .metric-pill {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: rgba(255,255,255,.15);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,.1);
+        font-size: 12px;
+        color: rgba(255,255,255,.85);
+    }
+    .metric-pill strong {
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    /* ── Factor List Breakdown ── */
+    .factor-row {
+        display: grid;
+        grid-template-columns: 110px 1fr 50px;
+        gap: 10px 14px;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid rgba(11,29,46,.08);
+    }
+    .factor-row:last-child {
         border-bottom: none;
     }
-    .factor-header {
-        display: flex;
-        justify-content: space-between;
+    .factor-name {
         font-weight: 600;
         font-size: 13px;
         color: #0B1D2E;
-        margin-bottom: 4px;
+    }
+    .bar-track {
+        height: 10px;
+        background: #E6F4F1;
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+    }
+    .bar-fill {
+        height: 100%;
+        border-radius: 6px;
+        position: relative;
+    }
+    .bar-fill::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.3) 50%, transparent 100%);
+        border-radius: 6px;
     }
     .factor-val {
         font-weight: 800;
-    }
-    .factor-reason {
-        font-size: 12px;
-        color: #5A6B72;
-        margin-top: 4px;
-    }
-    
-    /* Recommendations */
-    .rec-item {
-        background: #ffffff;
-        border-radius: 12px;
-        border: 1px solid rgba(11, 29, 46, 0.08);
-        padding: 15px;
-        margin-bottom: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        transition: transform 0.2s;
-    }
-    .rec-body {
-        flex: 1;
-        padding-right: 15px;
-    }
-    .rec-title {
-        font-weight: 700;
+        text-align: right;
         font-size: 14px;
         color: #0B1D2E;
     }
-    .rec-why {
+    .factor-reason {
+        grid-column: 1 / -1;
         font-size: 12px;
         color: #5A6B72;
-        margin-top: 3px;
-    }
-    .rec-gain {
-        padding: 6px 12px;
-        background: linear-gradient(135deg, #02C39A 0%, #00A896 100%);
-        color: white;
-        border-radius: 20px;
-        font-weight: 800;
-        font-size: 12px;
-        white-space: nowrap;
+        margin-top: -2px;
+        line-height: 1.5;
     }
 
-    /* Badges */
-    .delta-badge-pos {
-        background: rgba(2, 195, 154, 0.15);
-        color: #02C39A;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-weight: 700;
-        font-size: 14px;
+    /* ── Recommendations ── */
+    .rec {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 20px;
+        border: 1px solid rgba(11,29,46,.08);
+        border-radius: 14px;
+        margin-bottom: 12px;
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(8px);
+        transition: all .25s ease;
     }
-    .delta-badge-neg {
-        background: rgba(224, 122, 95, 0.15);
-        color: #E07A5F;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-weight: 700;
+    .rec:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(11,29,46,.08);
+        border-color: rgba(2,195,154,.2);
+    }
+    .rec-num {
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        color: #fff;
+        font-weight: 800;
         font-size: 14px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 3px 10px rgba(2,128,144,.25);
+    }
+    .rec-body { flex: 1; }
+    .rec-title { font-weight: 700; font-size: 14px; color: #0B1D2E; }
+    .rec-why { font-size: 12px; color: #5A6B72; margin-top: 3px; line-height: 1.4; }
+    .gain {
+        padding: 7px 14px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #02C39A 0%, #00A896 100%);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+        white-space: nowrap;
+        box-shadow: 0 3px 12px rgba(2,195,154,.25);
+    }
+
+    /* ── Delta Badges ── */
+    .delta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 15px;
+    }
+    .delta-badge.positive {
+        background: rgba(2,195,154,.15);
+        color: #02C39A;
+    }
+    .delta-badge.negative {
+        background: rgba(224,122,95,.12);
+        color: #E07A5F;
+    }
+    .delta-badge.neutral {
+        background: #E6F4F1;
+        color: #5A6B72;
+    }
+
+    /* ── Table Styling ── */
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    .custom-table th {
+        text-align: left;
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #5A6B72;
+        padding: 12px 16px;
+        border-bottom: 2px solid rgba(11,29,46,.08);
+        font-weight: 700;
+    }
+    .custom-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(11,29,46,.08);
+        font-size: 14px;
+        color: #0B1D2E;
+    }
+    .custom-table tr {
+        transition: all 0.18s ease;
+    }
+    .custom-table tr:hover {
+        background: linear-gradient(90deg, rgba(2,195,154,.06) 0%, rgba(2,128,144,.03) 100%);
+    }
+    
+    .chip {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .3px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    /* Custom range slider thumb adjustments for Streamlit */
+    div[data-testid="stSlider"] [data-handle] {
+        background: linear-gradient(135deg, #02C39A 0%, #028090 100%) !important;
+        border: 3px solid #fff !important;
+        box-shadow: 0 2px 8px rgba(2,128,144,.3) !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Database helper functions
+# Helper function to assign band colors
+def get_band_color(b):
+    colors = {
+        "Excellent":  "#02C39A",
+        "Good":       "#00A896",
+        "Fair":       "#E9B44C",
+        "Needs work": "#E08A3C",
+        "At risk":    "#E07A5F",
+    }
+    return colors.get(b, "#5A6B72")
+
+def get_factor_gradients(key):
+    grads = {
+        "savings_ratio":     ["#028090", "#02C39A"],
+        "spending_control":  ["#00A896", "#02C39A"],
+        "debt_load":         ["#0B7A8C", "#028090"],
+        "payment_stability": ["#028090", "#00A896"],
+        "liquidity_buffer":  ["#3AAFA9", "#02C39A"],
+    }
+    return grads.get(key, ["#028090", "#02C39A"])
+
+# Database connection functions
 def get_db_connection():
     con = sqlite3.connect(DB_PATH)
     con.row_factory = sqlite3.Row
@@ -261,11 +550,88 @@ def get_customer_details(cid):
         "band": row["band"]
     }
 
-# Navigation in Sidebar
-with st.sidebar:
-    st.markdown('<div class="brand-title">Fin<span>Pulse</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="brand-sub">IDBI Innovate 2026</div>', unsafe_allow_html=True)
+# ── Render Custom SVG Gauge ──
+def render_svg_gauge(score, band):
+    size = 150
+    r = size / 2 - 12
+    c = 2 * 3.14159 * r
+    pct = max(0, min(100, score)) / 100
+    col = get_band_color(band)
+    offset = c * (1 - pct)
     
+    return f"""
+    <div class="gauge-wrapper" style="width: {size}px; height: {size}px;">
+        <svg width="{size}" height="{size}" style="transform: rotate(-90deg);">
+            <circle cx="{size / 2}" cy="{size / 2}" r="{r}" fill="none"
+              stroke="rgba(255,255,255,.12)" stroke-width="12" />
+            <circle cx="{size / 2}" cy="{size / 2}" r="{r}" fill="none"
+              stroke="{col}" stroke-width="12" stroke-linecap="round"
+              stroke-dasharray="{c}" stroke-dashoffset="{offset}"
+              style="transition: stroke-dashoffset .8s ease; filter: drop-shadow(0 0 6px {col}44);" />
+        </svg>
+        <div class="gauge-text">
+            <div class="gauge-num">{score}</div>
+            <div class="gauge-of">/ 100</div>
+        </div>
+    </div>
+    """
+
+# ── Render Factor Breakdown ──
+def render_factor_list(factors):
+    html = '<div style="display: flex; flex-direction: column;">'
+    for f in factors:
+        c1, c2 = get_factor_gradients(f.key)
+        html += f"""
+        <div class="factor-row">
+            <div class="factor-name">{f.label}</div>
+            <div class="bar-track">
+                <div class="bar-fill" style="width: {f.sub_score}%; background: linear-gradient(90deg, {c1}, {c2});"></div>
+            </div>
+            <div class="factor-val">{int(f.sub_score)}</div>
+            <div class="factor-reason">{f.reason}</div>
+        </div>
+        """
+    html += '</div>'
+    return html
+
+# ── Render Recommendations ──
+def render_recs(recs):
+    if not recs:
+        return "<p class='muted'>✅ No actions needed — this profile is already healthy.</p>"
+    
+    gradients = [
+        "linear-gradient(135deg, #028090, #02C39A)",
+        "linear-gradient(135deg, #00A896, #3AAFA9)",
+        "linear-gradient(135deg, #0B7A8C, #028090)",
+        "linear-gradient(135deg, #02C39A, #00A896)",
+    ]
+    
+    html = ""
+    for idx, r in enumerate(recs):
+        grad = gradients[idx % len(gradients)]
+        html += f"""
+        <div class="rec">
+            <div class="rec-num" style="background: {grad};">{idx + 1}</div>
+            <div class="rec-body">
+                <div class="rec-title">{r["title"]}</div>
+                <div class="rec-why">{r["why"]}</div>
+            </div>
+            <div class="gain">+{r["projected_gain"]} pts</div>
+        </div>
+        """
+    return html
+
+# ── Navigation in Sidebar ──
+with st.sidebar:
+    st.markdown("""
+    <div class="brand">
+        <div class="brand-icon">💳</div>
+        Fin<span>Pulse</span>
+    </div>
+    <div class="brand-sub">IDBI Innovate 2026</div>
+    """, unsafe_allow_html=True)
+    
+    # Render Navigation (uses custom styled radio labels)
     view = st.radio(
         "Navigation",
         ["📊 Portfolio Health", "🎯 Customer Score Card", "⚡ What-if Simulator"],
@@ -274,7 +640,7 @@ with st.sidebar:
 
     st.markdown("<br><hr>", unsafe_allow_html=True)
     st.markdown(
-        "<div style='font-size: 11px; color: #8FA3AB; line-height: 1.5;'>"
+        "<div style='font-size: 11px; color: rgba(160,200,190,.4); line-height: 1.7;'>"
         "Explainable Financial Health Score.<br>"
         "Team NexusBankers.<br>"
         "Runs on the bank's own data — no black box."
@@ -284,72 +650,98 @@ with st.sidebar:
 
 # ════════════════ PORTFOLIO VIEW ════════════════
 if view == "📊 Portfolio Health":
-    st.subheader("Portfolio Health")
-    st.caption("Relationship manager view")
+    st.markdown('<div class="page-kicker">Relationship manager view</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">Portfolio Health</div>', unsafe_allow_html=True)
 
     stats = get_stats()
     
-    # Stat cards
+    # Premium Stat cards
     col1, col2, col3 = st.columns(3)
     with col1:
         st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Customers Scored</div>
-            <div class="metric-value">{stats["total_customers"]:,}</div>
+        <div class="card">
+            <div class="stat-label">Customers Scored</div>
+            <div class="big-stat">{stats["total_customers"]:,}</div>
         </div>
         """, unsafe_allow_html=True)
     with col2:
         st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Average Score</div>
-            <div class="metric-value">{stats["avg_score"]}</div>
+        <div class="card">
+            <div class="stat-label">Average Score</div>
+            <div class="big-stat">{stats["avg_score"]}</div>
         </div>
         """, unsafe_allow_html=True)
     with col3:
         at_risk = stats["bands"].get("At risk", 0)
         st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">At-risk Customers</div>
-            <div class="metric-value danger">{at_risk}</div>
+        <div class="card">
+            <div class="stat-label">At-Risk Customers</div>
+            <div class="big-stat danger">{at_risk}</div>
         </div>
         """, unsafe_allow_html=True)
 
     # Score Distribution Chart
-    st.markdown("### 📊 Score Distribution")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-h">📊 Score Distribution</div>', unsafe_allow_html=True)
     hist_df = pd.DataFrame(stats["histogram"])
     hist_df.rename(columns={"bucket": "Score Range", "count": "Count"}, inplace=True)
     st.bar_chart(hist_df, x="Score Range", y="Count", color="#028090")
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Customer Table
-    st.markdown("### 👤 Customers")
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-h">👤 Customers</div>', unsafe_allow_html=True)
+    
+    # Band selection pills
     band_options = ["All bands", "Excellent", "Good", "Fair", "Needs work", "At risk"]
-    selected_band = st.selectbox("Filter by Band", band_options)
+    selected_band = st.selectbox("Filter by band", band_options, label_visibility="collapsed")
     
     query_band = selected_band if selected_band != "All bands" else None
     customers = get_customers(band=query_band)
     
     if customers:
-        df = pd.DataFrame(customers)
-        df["cohort"] = df["cohort"].str.replace("_", " ").str.title()
-        df["monthly_income"] = df["monthly_income"].apply(lambda x: f"₹{x:,}")
-        df.rename(columns={
-            "id": "ID",
-            "name": "Name",
-            "cohort": "Segment",
-            "monthly_income": "Monthly Income",
-            "score": "Score",
-            "band": "Band"
-        }, inplace=True)
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        table_html = """
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Segment</th>
+                    <th>Income</th>
+                    <th>Score</th>
+                    <th>Band</th>
+                </tr>
+            </thead>
+            <tbody>
+        """
+        for r in customers:
+            col = get_band_color(r["band"])
+            table_html += f"""
+                <tr>
+                    <td style="font-family: monospace; color: #5A6B72;">#{r["id"]}</td>
+                    <td style="font-weight: 600;">{r["name"]}</td>
+                    <td style="color: #5A6B72;">{r["cohort"].replace('_', ' ').title()}</td>
+                    <td style="font-family: monospace;">₹{r["monthly_income"]:,}</td>
+                    <td style="font-family: monospace; font-weight: 800;">{r["score"]}</td>
+                    <td>
+                        <span class="chip" style="background: {col}18; color: {col};">
+                            {r["band"]}
+                        </span>
+                    </td>
+                </tr>
+            """
+        table_html += "</tbody></table>"
+        st.markdown(table_html, unsafe_allow_html=True)
     else:
         st.info("No customers found in this category.")
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ════════════════ SCORE CARD VIEW ════════════════
 elif view == "🎯 Customer Score Card":
-    st.subheader("Customer Score Card")
-    st.caption("Detailed view of explainable customer profiles")
+    st.markdown('<div class="page-kicker">Customer score card</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">Customer Health Details</div>', unsafe_allow_html=True)
 
-    # Search for customer
+    # Selectbox / input search
     customer_id = st.number_input("Enter Customer ID", min_value=1, max_value=5000, value=12, step=1)
     data = get_customer_details(customer_id)
 
@@ -357,22 +749,35 @@ elif view == "🎯 Customer Score Card":
         result = compute_score(data["metrics"])
         recs = recommend(data["metrics"], top_n=4)
         
-        # Hero Banner
-        band_class = data["band"].replace(" ", "-")
+        # Hero Banner with SVG Gauge, Metric Pills
+        gauge_html = render_svg_gauge(result.score, result.band)
+        band_col = get_band_color(result.band)
+        
         st.markdown(f"""
-        <div class="hero-card">
-            <div class="hero-gauge {band_class}">{result.score}</div>
-            <div>
-                <h2 style="margin:0 0 5px 0; color:white; font-size:26px;">{data["name"]}</h2>
-                <div style="font-size: 14px; color: rgba(255,255,255,0.85); max-width: 500px; line-height: 1.5;">
-                    Financial health for <strong>{data["name"]}</strong>, a {data["cohort"].replace("_", " ")} earning 
-                    ₹{data["monthly_income"]:,}/month. Every point is traceable to a factor — no black box.
+        <div class="score-hero">
+            {gauge_html}
+            <div style="position: relative; z-index: 2;">
+                <div class="band-pill" style="background: {band_col};">
+                    {result.band}
                 </div>
-                <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
-                    <span style="background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-size:12px;">💰 Savings: <strong>{data["metrics"]["savings_rate"]*100:.0f}%</strong></span>
-                    <span style="background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-size:12px;">📊 DTI: <strong>{data["metrics"]["debt_to_income"]*100:.0f}%</strong></span>
-                    <span style="background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-size:12px;">🛡️ Buffer: <strong>{data["metrics"]["emergency_months"]:.1f} mo</strong></span>
-                    <span style="background:rgba(255,255,255,0.15); padding:4px 10px; border-radius:6px; font-size:12px;">✅ On-time: <strong>{data["metrics"]["on_time_rate"]*100:.0f}%</strong></span>
+                <div style="font-size: 15px; color: rgba(207,231,228,.85); margin-top: 14px; max-width: 460px; line-height: 1.6;">
+                    Financial health for <strong style="color: #fff;">{data["name"]}</strong>,
+                    a {data["cohort"].replace('_', ' ')} earning ₹{data["monthly_income"]:,}/month.
+                    Every point below is traceable to a factor — no black box.
+                </div>
+                <div class="metric-pills">
+                    <div class="metric-pill">
+                        💰 Savings <strong>{data["metrics"]["savings_rate"]*100:.0f}%</strong>
+                    </div>
+                    <div class="metric-pill">
+                        📊 DTI <strong>{data["metrics"]["debt_to_income"]*100:.0f}%</strong>
+                    </div>
+                    <div class="metric-pill">
+                        🛡️ Buffer <strong>{data["metrics"]["emergency_months"]:.1f} mo</strong>
+                    </div>
+                    <div class="metric-pill">
+                        ✅ On-time <strong>{data["metrics"]["on_time_rate"]*100:.0f}%</strong>
+                    </div>
                 </div>
             </div>
         </div>
@@ -380,44 +785,23 @@ elif view == "🎯 Customer Score Card":
 
         col1, col2 = st.columns(2)
         with col1:
-            st.markdown('<div class="metric-card" style="min-height:380px;">'
-                        '<h4>📋 Why this score</h4><br>', unsafe_allow_html=True)
-            for f in result.factors:
-                st.markdown(f"""
-                <div class="factor-container">
-                    <div class="factor-header">
-                        <span>{f.label}</span>
-                        <span class="factor-val">{int(f.sub_score)}/100</span>
-                    </div>
-                    <div class="factor-reason">{f.reason}</div>
-                </div>
-                """, unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown('<div class="card" style="min-height: 420px;">', unsafe_allow_html=True)
+            st.markdown('<div class="section-h">📋 Why this score</div>', unsafe_allow_html=True)
+            st.markdown(render_factor_list(result.factors), unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
 
         with col2:
-            st.markdown('<div class="metric-card" style="min-height:380px;">'
-                        '<h4>🚀 Recommended actions</h4><br>', unsafe_allow_html=True)
-            if recs:
-                for idx, r in enumerate(recs):
-                    st.markdown(f"""
-                    <div class="rec-item">
-                        <div class="rec-body">
-                            <div class="rec-title">{idx+1}. {r["title"]}</div>
-                            <div class="rec-why">{r["why"]}</div>
-                        </div>
-                        <div class="rec-gain">+{r["projected_gain"]} pts</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            else:
-                st.markdown("<p style='color:#5A6B72;'>✅ No actions needed — this profile is already healthy.</p>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown('<div class="card" style="min-height: 420px;">', unsafe_allow_html=True)
+            st.markdown('<div class="section-h">🚀 Recommended actions</div>', unsafe_allow_html=True)
+            st.markdown(render_recs(recs), unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.error("Customer not found. Please enter a valid ID (1 to 5000).")
 
 # ════════════════ SIMULATOR VIEW ════════════════
 else:
-    st.subheader("What-if Simulator")
-    st.caption("Model financial behavior updates and watch the score move")
+    st.markdown('<div class="page-kicker">What-if simulator</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-title">Model a Change, Watch the Score Move</div>', unsafe_allow_html=True)
 
     START = {
         "savings_rate": 0.08, "spend_volatility": 0.35, "debt_to_income": 0.4,
@@ -430,11 +814,12 @@ else:
     col1, col2 = st.columns([1.2, 1])
     
     with col1:
-        st.markdown('<div class="metric-card"><h4>🎛️ Adjust metrics</h4>', unsafe_allow_html=True)
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="section-h">🎛️ Adjust the inputs</div>', unsafe_allow_html=True)
         
         sim_metrics = {}
-        sim_metrics["savings_rate"] = st.slider("💰 Savings rate", 0.0, 0.45, START["savings_rate"], 0.01, format="%.2f")
-        sim_metrics["spend_volatility"] = st.slider("📉 Spending volatility", 0.05, 0.8, START["spend_volatility"], 0.01)
+        sim_metrics["savings_rate"] = st.slider("💰 Savings rate", 0.0, 0.45, START["savings_rate"], 0.01)
+        sim_metrics["spend_volatility"] = st.slider("Spend volatility", 0.05, 0.8, START["spend_volatility"], 0.01)
         sim_metrics["debt_to_income"] = st.slider("🏦 Debt-to-income (EMIs)", 0.0, 0.65, START["debt_to_income"], 0.01)
         sim_metrics["income_regularity"] = st.slider("📅 Income regularity", 0.3, 1.0, START["income_regularity"], 0.01)
         sim_metrics["on_time_rate"] = st.slider("✅ On-time payments", 0.5, 1.0, START["on_time_rate"], 0.01)
@@ -446,8 +831,9 @@ else:
             if st.button("Reset to default profile"):
                 st.rerun()
         with btn_col2:
-            # Setup ideal profile variables
             if st.button("⭐ Load Ideal profile"):
+                # We can't update sliders in Streamlit directly without keys or rerun, 
+                # but we can set session states
                 st.session_state["savings_rate"] = 0.28
                 st.session_state["spend_volatility"] = 0.12
                 st.session_state["debt_to_income"] = 0.10
@@ -463,35 +849,34 @@ else:
         new_res = compute_score(sim_metrics)
         delta = new_res.score - base_res.score
         
-        band_class = new_res.band.replace(" ", "-")
+        # Render custom SVG gauge hero
+        gauge_html = render_svg_gauge(new_res.score, new_res.band)
+        band_col = get_band_color(new_res.band)
         
-        # Render gauge hero
+        delta_badge_html = ""
+        if delta == 0:
+            delta_badge_html = "<span class='delta-badge neutral'>Same as starting profile</span>"
+        elif delta > 0:
+            delta_badge_html = f"<span class='delta-badge positive'>▲ +{delta} points</span>"
+        else:
+            delta_badge_html = f"<span class='delta-badge negative'>▼ {delta} points</span>"
+
         st.markdown(f"""
-        <div class="hero-card">
-            <div class="hero-gauge {band_class}">{new_res.score}</div>
-            <div>
-                <h3 style="margin:0; color:white;">Projected Score</h3>
-                <span class="band-pill" style="color:white; background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:4px; font-size:12px;">{new_res.band}</span>
-                <div style="margin-top:15px;">
-                    {"<span class='delta-badge-pos'>▲ +" + str(delta) + " points</span>" if delta > 0 else 
-                     "<span class='delta-badge-neg'>▼ " + str(delta) + " points</span>" if delta < 0 else 
-                     "<span style='color:lightgray; font-size:14px;'>Same as starting profile</span>"}
+        <div class="score-hero">
+            {gauge_html}
+            <div style="position: relative; z-index: 2;">
+                <div class="band-pill" style="background: {band_col};">
+                    {new_res.band}
+                </div>
+                <div style="margin-top: 15px;">
+                    {delta_badge_html}
                 </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # Factor breakdown
-        st.markdown('<div class="metric-card">'
-                    '<h4>📋 Live factor breakdown</h4><br>', unsafe_allow_html=True)
-        for f in new_res.factors:
-            st.markdown(f"""
-            <div class="factor-container">
-                <div class="factor-header">
-                    <span>{f.label}</span>
-                    <span class="factor-val">{int(f.sub_score)}/100</span>
-                </div>
-                <div class="factor-reason">{f.reason}</div>
-            </div>
-            """, unsafe_allow_html=True)
+        # Live Factor breakdown
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        st.markdown('<div class="section-h">📋 Live factor breakdown</div>', unsafe_allow_html=True)
+        st.markdown(render_factor_list(new_res.factors), unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
