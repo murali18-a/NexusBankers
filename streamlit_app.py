@@ -104,11 +104,17 @@ st.markdown("""
     }
 
     /* ── Sidebar Navigation Pills ── */
-    /* Hide "Navigation" label above radio group */
+    /* Hide "Navigation" label above radio group — every possible selector */
     div[data-testid="stRadio"] > label,
     div[data-testid="stRadio"] [data-testid="stWidgetLabel"],
-    div[data-testid="stRadio"] > div > label:first-child {
+    div[data-testid="stRadio"] > div > label:first-child,
+    [data-testid="stSidebar"] div[data-testid="stRadio"] > label,
+    [data-testid="stSidebar"] .stRadio > label {
         display: none !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     /* Radio container layout */
     div[data-testid="stRadio"] > div > div {
@@ -118,7 +124,7 @@ st.markdown("""
     }
     /* Each option row */
     div[data-testid="stRadio"] div[role="radiogroup"] > label,
-    div[data-testid="stRadio"] label {
+    div[data-testid="stRadio"] label[data-baseweb="radio"] {
         padding: 11px 14px !important;
         border-radius: 10px !important;
         cursor: pointer !important;
@@ -136,18 +142,24 @@ st.markdown("""
     div[data-testid="stRadio"] label:hover {
         background: rgba(255,255,255,0.06) !important;
         color: #E0F5F0 !important;
-        transform: translateX(2px) !important;
     }
-    /* ── Hide all radio circle indicators ── */
+    /* ── NUCLEAR: Hide ALL radio circle/dot indicators ── */
     div[data-testid="stRadio"] input[type="radio"],
     div[data-testid="stRadio"] label > div:first-child,
-    div[data-testid="stRadio"] label span:first-child,
+    div[data-testid="stRadio"] label > span:first-child,
     div[data-testid="stRadio"] [class*="radio"] circle,
-    div[data-testid="stRadio"] svg {
+    div[data-testid="stRadio"] svg,
+    div[data-testid="stRadio"] div[data-baseweb="radio"] > div:first-child,
+    div[data-testid="stRadio"] label > div[class*="indicator"],
+    div[data-testid="stRadio"] label > div[aria-hidden] {
         display: none !important;
         width: 0 !important;
         height: 0 !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
         overflow: hidden !important;
+        position: absolute !important;
+        opacity: 0 !important;
     }
     /* ── Active / checked state ── */
     div[data-testid="stRadio"] div[data-checked="true"] > label,
@@ -157,7 +169,6 @@ st.markdown("""
         font-weight: 700 !important;
         border-color: rgba(2,195,154,.25) !important;
         box-shadow: 0 4px 18px rgba(2,128,144,.25) !important;
-        transform: none !important;
     }
     div[data-testid="stRadio"] div[data-checked="true"] label p,
     div[data-testid="stRadio"] div[data-checked="true"] label span {
@@ -842,8 +853,7 @@ else:
     col1, col2 = st.columns([1.2, 1])
     
     with col1:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown('<div class="section-h">🎛️ Adjust the inputs</div>', unsafe_allow_html=True)
+        render_html('<div class="section-h">🎛️ Adjust the inputs</div>')
         
         sim_metrics = {}
         sim_metrics["savings_rate"] = st.slider("💰 Savings rate", 0.0, 0.45, START["savings_rate"], 0.01)
@@ -860,8 +870,6 @@ else:
                 st.rerun()
         with btn_col2:
             if st.button("⭐ Load Ideal profile"):
-                # We can't update sliders in Streamlit directly without keys or rerun, 
-                # but we can set session states
                 st.session_state["savings_rate"] = 0.28
                 st.session_state["spend_volatility"] = 0.12
                 st.session_state["debt_to_income"] = 0.10
@@ -869,8 +877,6 @@ else:
                 st.session_state["on_time_rate"] = 0.99
                 st.session_state["emergency_months"] = 6.5
                 st.rerun()
-
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with col2:
         # Calculate new score
