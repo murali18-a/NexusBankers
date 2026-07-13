@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: finpulse-api
+    runtime: python
+    buildCommand: "pip install -r requirements.txt && python -m app.generate_data --n 5000"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
