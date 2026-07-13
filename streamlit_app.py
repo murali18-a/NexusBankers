@@ -104,18 +104,23 @@ st.markdown("""
         padding-left: 46px;
     }
 
-    /* Turn Streamlit's radio buttons into our active navigation pills */
-    div[data-testid="stRadio"] > div {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    /* Hide the radio widget header label ("Navigation") */
-    div[data-testid="stRadio"] > label {
+    /* ── Sidebar Navigation Pills ── */
+    /* Hide "Navigation" label above radio group */
+    div[data-testid="stRadio"] > label,
+    div[data-testid="stRadio"] [data-testid="stWidgetLabel"],
+    div[data-testid="stRadio"] > div > label:first-child {
         display: none !important;
     }
+    /* Radio container layout */
+    div[data-testid="stRadio"] > div > div {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+    }
+    /* Each option row */
+    div[data-testid="stRadio"] div[role="radiogroup"] > label,
     div[data-testid="stRadio"] label {
-        padding: 12px 14px !important;
+        padding: 11px 14px !important;
         border-radius: 10px !important;
         cursor: pointer !important;
         font-size: 14px !important;
@@ -123,35 +128,50 @@ st.markdown("""
         color: #8AAFA9 !important;
         display: flex !important;
         align-items: center !important;
-        gap: 12px !important;
         transition: all 0.2s !important;
         background: transparent !important;
-        border: none !important;
+        border: 1px solid transparent !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     div[data-testid="stRadio"] label:hover {
         background: rgba(255,255,255,0.06) !important;
         color: #E0F5F0 !important;
-        transform: translateX(2px);
+        transform: translateX(2px) !important;
     }
-    /* Hide radio circle & indicator wrapper completely */
-    div[data-testid="stRadio"] label > div:first-child {
+    /* ── Hide all radio circle indicators ── */
+    div[data-testid="stRadio"] input[type="radio"],
+    div[data-testid="stRadio"] label > div:first-child,
+    div[data-testid="stRadio"] label span:first-child,
+    div[data-testid="stRadio"] [class*="radio"] circle,
+    div[data-testid="stRadio"] svg {
         display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
     }
-    /* Style check state */
+    /* ── Active / checked state ── */
+    div[data-testid="stRadio"] div[data-checked="true"] > label,
     div[data-testid="stRadio"] div[data-checked="true"] label {
-        background: linear-gradient(135deg, #028090 0%, rgba(2,195,154,0.7) 100%) !important;
+        background: linear-gradient(135deg, #028090 0%, rgba(2,195,154,.75) 100%) !important;
         color: #ffffff !important;
-        font-weight: 600 !important;
-        box-shadow: 0 4px 18px rgba(2,128,144,.3);
+        font-weight: 700 !important;
+        border-color: rgba(2,195,154,.25) !important;
+        box-shadow: 0 4px 18px rgba(2,128,144,.25) !important;
+        transform: none !important;
     }
-    div[data-testid="stRadio"] div[data-checked="true"] label p {
+    div[data-testid="stRadio"] div[data-checked="true"] label p,
+    div[data-testid="stRadio"] div[data-checked="true"] label span {
         color: #ffffff !important;
     }
+    /* Label paragraph (the text inside) */
     div[data-testid="stRadio"] label p {
         margin: 0 !important;
         font-size: 14px !important;
-        font-weight: 500 !important;
+        font-weight: inherit !important;
+        color: inherit !important;
     }
+
 
     /* ── Main View Typography ── */
     .page-kicker {
