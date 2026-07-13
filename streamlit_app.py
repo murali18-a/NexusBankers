@@ -15,7 +15,6 @@ DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "backend", "fi
 
 # Ensure database exists; if not, build it with 5000 customers
 if not os.path.exists(DB_PATH):
-    st.info("Database not found. Generating synthetic data of 5,000 customers...")
     from backend.app.generate_data import build
     build(5000)
 
@@ -710,16 +709,13 @@ if view == "📊 Portfolio Health":
         """)
 
     # Score Distribution Chart
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-h">📊 Score Distribution</div>', unsafe_allow_html=True)
+    render_html('<div class="section-h" style="margin-top: 12px;">📊 Score Distribution</div>')
     hist_df = pd.DataFrame(stats["histogram"])
     hist_df.rename(columns={"bucket": "Score Range", "count": "Count"}, inplace=True)
     st.bar_chart(hist_df, x="Score Range", y="Count", color="#028090")
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # Customer Table
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown('<div class="section-h">👤 Customers</div>', unsafe_allow_html=True)
+    render_html('<div class="section-h" style="margin-top: 20px;">👤 Customers</div>')
     
     # Band selection pills
     band_options = ["All bands", "Excellent", "Good", "Fair", "Needs work", "At risk"]
@@ -763,7 +759,6 @@ if view == "📊 Portfolio Health":
         render_html(table_html)
     else:
         st.info("No customers found in this category.")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 # ════════════════ SCORE CARD VIEW ════════════════
 elif view == "🎯 Customer Score Card":
